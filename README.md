@@ -25,7 +25,7 @@ hg largefile みたいにおっきいファイルを git でも扱いたい
 ```
 [filter "largefile"]
     clean = store-largefile.py
-    smudge = load-largefile
+    smudge = load-largefile.py
 ```
 
 これで largefile フィルターが動きます.
