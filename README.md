@@ -2,8 +2,6 @@
 
 hg largefile みたいにおっきいファイルを git でも扱いたい
 
-まだプロトタイプです。
-
 ## 動作
 
 コミットするときにハッシュ値だけをコミットし、ファイルの実態は `~/.gitasset/data`
@@ -47,13 +45,17 @@ git リポジトリの中に `.gitattributes` っていうファイルを作っ�
 
 largefile の S3 版
 
-### インストール
+`.gitasset/data` を rsync しなくても S3 からダウンロードできる.
+
+## インストール
+
+largefile とだいたい同じですが、 boto がいります.
 
 ```
 $ pip install boto path.py
 ```
 
-### 設定
+## 設定
 
 予め S3 にアクセスできるキーとバケットを作っておいてください。
 
@@ -65,7 +67,7 @@ awskey = "Access Key Id:Secret Access Key"
 bucket = バケット名
 ```
 
-### gitconfig
+## gitconfig
 
 ```
 [filter "s3"]
