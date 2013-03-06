@@ -42,3 +42,35 @@ git リポジトリの中に `.gitattributes` っていうファイルを作っ�
 ```
 
 これで設定したファイルは largefile フィルターを通るようになります.
+
+# gits3
+
+largefile の S3 版
+
+### インストール
+
+```
+$ pip install boto path.py
+```
+
+### 設定
+
+予め S3 にアクセスできるキーとバケットを作っておいてください。
+
+`~/.gitasset/gits3.ini` に次のように書いてください:
+
+```
+[DEFAULT]
+awskey = "Access Key Id:Secret Access Key"
+bucket = バケット名
+```
+
+### gitconfig
+
+```
+[filter "s3"]
+    clean = gits3.py store
+    smudge = gits3.py load
+```
+
+gitattributes も `filter=s3` に設定しておいてください.
