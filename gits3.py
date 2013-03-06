@@ -59,5 +59,5 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'load':
         load()
     else:
-        print("usate: gits3.py <store|load>", file=sys.stderr)
+        print("usage: gits3.py <store|load>", file=sys.stderr)
         sys.exit(1)
