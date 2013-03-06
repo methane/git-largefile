@@ -53,11 +53,16 @@ def load():
         contents = get_key(hexdigest).get_contents_as_string()
     write_stdout(contents)
 
+def usage():
+    print("usage: gits3.py <store|load>", file=sys.stderr)
+    sys.exit(1)
+
 if __name__ == '__main__':
-    if sys.argv[1] == 'store':
+    if len(sys.argv) < 2:
+        usage()
+    elif sys.argv[1] == 'store':
         store()
     elif sys.argv[1] == 'load':
         load()
     else:
-        print("usage: gits3.py <store|load>", file=sys.stderr)
-        sys.exit(1)
+        usage()
