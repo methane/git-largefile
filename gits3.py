@@ -44,8 +44,21 @@ def store():
 
     write_stdout(hexdigest)
 
+def is_valid_hash(hex):
+    if len(hex) != 40:
+        return False
+    try:
+        int(hex, 16)
+    except ValueError:
+        return False
+    else:
+        return True
+
 def load():
     hexdigest = read_stdin()
+    if not is_valid_hash(hexdigest):
+        write_stdout(hexdigest)
+        return
     cache_path = get_cache_path(hexdigest)
     if cache_path.exists():
         contents = cache_path.bytes()
