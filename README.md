@@ -55,6 +55,10 @@ largefile とだいたい同じですが、 boto がいります.
 $ pip install boto path.py
 ```
 
+もしくは、go版もあります。自分で `go build` するか、 `dist/` ディレクトリ内の
+ビルド済みバイナリを利用してください。
+インストールは PATH が通ったディレクトリにバイナリを放り込むだけです。
+
 ## 設定
 
 予め S3 にアクセスできるキーとバケットを作っておいてください。
@@ -74,5 +78,7 @@ bucket = バケット名
     clean = gits3.py store
     smudge = gits3.py load
 ```
+
+Go 版を使う時は `gits3.py` の代わりに `gits3-linux-amd64` など、用意したバイナリ名を指定してください。
 
 gitattributes も `filter=s3` に設定しておいてください.
