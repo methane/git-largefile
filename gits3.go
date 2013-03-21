@@ -109,15 +109,17 @@ func store() {
 
 func isValidHash(hex string) bool {
 	if len(hex) != 40 {
+		log.Println("warn: hash length is ", len(hex))
 		return false
 	}
-	for c := range hex {
+	for _, c := range hex {
 		if '0' <= c && c <= '9' {
 			continue
 		}
 		if 'a' <= c && c <= 'f' {
 			continue
 		}
+		log.Println("warn: hash contains ", c, hex)
 		return false
 	}
 	return true
