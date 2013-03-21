@@ -47,7 +47,7 @@ func getBucket() *s3.Bucket {
 		log.Fatal("Bad awskey:" + awskey)
 	}
 	auth := aws.Auth{key_secret[0], key_secret[1]}
-	return s3.New(auth, aws.USEast).Bucket(bucketName)
+	return s3.New(auth, aws.APNortheast).Bucket(bucketName)
 }
 
 func cachePath(sha1hex string) (dirpath, filename string) {
