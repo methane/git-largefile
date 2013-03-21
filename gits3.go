@@ -105,6 +105,7 @@ func store() {
 	log.Println("sha1=", sha1hex)
 	storeToCache(sha1hex, contents)
 	storeToS3(sha1hex, contents)
+        writeStdout([]byte(sha1hex))
 }
 
 func isValidHash(hex string) bool {
