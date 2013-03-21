@@ -107,12 +107,39 @@ func store() {
 	storeToS3(sha1hex, contents)
 }
 
+func isValidHash(hex string) bool {
+	if len(hex) != 40 {
+		return false
+	}
+	for c := range hex {
+		if '0' <= c && c <= '9' {
+			continue
+		}
+		if 'a' <= c && c <= 'f' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+func writeStdout(contents []byte) {
+	_, err := os.Stdout.Write(contents)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func load() {
 	hash, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
 	hex := string(hash)
+	if !isValidHash(hex) {
+		writeStdout(hash)
+		return
+	}
 	contents, err := loadFromCache(hex)
 	if os.IsNotExist(err) {
 		contents, err = loadFromS3(hex)
@@ -123,10 +150,7 @@ func load() {
 	} else if err != nil {
 		log.Fatal(err)
 	}
-	n, err := os.Stdout.Write(contents)
-	if n != len(contents) || err != nil {
-		log.Fatal(err)
-	}
+	writeStdout(contents)
 }
 
 func main() {
