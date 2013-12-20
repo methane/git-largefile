@@ -71,7 +71,6 @@ func storeToS3(hex string, data []byte) error {
 		log.Println("Already exists in S3: ", hex)
 		return err
 	}
-	log.Println(err)
 	return bucket.Put(hex, data, "application/octet-stream", s3.Private)
 }
 
@@ -102,17 +101,20 @@ func loadFromCache(hex string) ([]byte, error) {
 	return ioutil.ReadFile(filepath.Join(dirpath, filename))
 }
 
+func calcSha1String(data []byte) string {
+	sum := sha1.New()
+	sum.Write(data)
+	return fmt.Sprintf("%x", sum.Sum(nil))
+}
+
 func store() {
-	contents, err := ioutil.ReadAll(os.Stdin)
+	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
-	sum := sha1.New()
-	sum.Write(contents)
-	sha1hex := fmt.Sprintf("%x", sum.Sum(nil))
-	log.Println("sha1=", sha1hex)
-	storeToCache(sha1hex, contents)
-	storeToS3(sha1hex, contents)
+	sha1hex := calcSha1String(data)
+	storeToCache(sha1hex, data)
+	storeToS3(sha1hex, data)
 	writeStdout([]byte(sha1hex))
 }
 
@@ -164,9 +166,31 @@ func load() {
 	writeStdout(contents)
 }
 
+func upload() {
+	datadir := filepath.Join(assetDir(), "data")
+	store := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Println("Skip:", path, err)
+			return nil // Skip this directory.
+		}
+		if info.IsDir() {
+			return nil
+		}
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			log.Println("Skip:", path, err)
+			return nil // Skip this file.
+		}
+		sha1hex := calcSha1String(data)
+		return storeToS3(sha1hex, data)
+	}
+	filepath.Walk(datadir, store)
+}
+
 const usageStr = `Usage:
-  gits3 [options] store
-  gits3 [options] load
+  gits3 [options] store < input-file > shafile
+  gits3 [options] load < shafile > output-file
+  gits3 [options] upload
 
 Options:`
 
@@ -187,6 +211,8 @@ func main() {
 		store()
 	case "load":
 		load()
+	case "upload":
+		upload()
 	default:
 		log.Fatal("Invalid argument.")
 	}
