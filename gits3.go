@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"flag"
 	"fmt"
 	"github.com/msbranco/goconfig"
 	"io/ioutil"
@@ -14,12 +15,19 @@ import (
 	"strings"
 )
 
+var configSection = flag.String("section", "default", "Section name of config file.")
+var assetDirPath = flag.String("assetpath", "~/.gitasset", "Asset directory")
+
 func assetDir() string {
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+	p := *assetDirPath
+	if p[0:2] == "~/" {
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatal(err)
+		}
+		p = filepath.Join(usr.HomeDir, p[2:])
 	}
-	return filepath.Join(usr.HomeDir, ".gitasset")
+	return p
 }
 
 func getConfig() *goconfig.ConfigFile {
@@ -33,11 +41,11 @@ func getConfig() *goconfig.ConfigFile {
 
 func getBucket() *s3.Bucket {
 	conf := getConfig()
-	awskey, err := conf.GetString("default", "awskey")
+	awskey, err := conf.GetString(*configSection, "awskey")
 	if err != nil {
 		log.Fatal(err)
 	}
-	bucketName, err := conf.GetString("default", "bucket")
+	bucketName, err := conf.GetString(*configSection, "bucket")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +113,7 @@ func store() {
 	log.Println("sha1=", sha1hex)
 	storeToCache(sha1hex, contents)
 	storeToS3(sha1hex, contents)
-        writeStdout([]byte(sha1hex))
+	writeStdout([]byte(sha1hex))
 }
 
 func isValidHash(hex string) bool {
@@ -156,12 +164,25 @@ func load() {
 	writeStdout(contents)
 }
 
+const usageStr = `Usage:
+  gits3 [options] store
+  gits3 [options] load
+
+Options:`
+
+func usage() {
+	fmt.Fprintln(os.Stderr, usageStr)
+	flag.PrintDefaults()
+}
+
 func main() {
 	log.SetPrefix("gits3:")
-	if len(os.Args) < 2 {
-		log.Fatal("Invalid argument.")
+	flag.Parse()
+	if flag.NArg() != 1 {
+		usage()
+		os.Exit(1)
 	}
-	switch os.Args[1] {
+	switch flag.Args()[0] {
 	case "store":
 		store()
 	case "load":
