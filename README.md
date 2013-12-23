@@ -1,65 +1,22 @@
 # git-largefile
 
-hg largefile みたいにおっきいファイルを git でも扱いたい
+Manage binary files with git.
 
-## 動作
+## How it works
 
 コミットするときにハッシュ値だけをコミットし、ファイルの実態は `~/.gitasset/data`
 に格納します。
 
 別のマシンでチェックアウトする場合は、 `~/.gitasset/data` を rsync しておきます.
 
-## 設定方法
+## Setup
 
-### インストール
+### Install
 
 ``store-largefile.py`` と ``load-largefile.py`` にパスを通してください。
 `pip install path.py` もしておいてください。
 
-### gitconfig
-
-`~/.gitconfig` か `.git/config` に、次のように設定してください
-
-```
-[filter "largefile"]
-    clean = store-largefile.py
-    smudge = load-largefile.py
-```
-
-これで largefile フィルターが動きます.
-
-### gitattribute
-
-git リポジトリの中に `.gitattributes` っていうファイルを作って、次のように設定してください。
-
-```
-*.png  filter=largefile
-*.jpeg filter=largefile
-*.jpg  filter=largefile
-*.gif  filter=largefile
-```
-
-これで設定したファイルは largefile フィルターを通るようになります.
-
-# gits3
-
-largefile の S3 版
-
-`.gitasset/data` を rsync しなくても S3 からダウンロードできる.
-
-## インストール
-
-largefile とだいたい同じですが、 boto がいります.
-
-```
-$ pip install boto path.py
-```
-
-もしくは、go版もあります。自分で `go build` するか、 `dist/` ディレクトリ内の
-ビルド済みバイナリを利用してください。
-インストールは PATH が通ったディレクトリにバイナリを放り込むだけです。
-
-## 設定
+### S3 Configuration
 
 予め S3 にアクセスできるキーとバケットを作っておいてください。
 
@@ -71,14 +28,26 @@ awskey = "Access Key Id:Secret Access Key"
 bucket = バケット名
 ```
 
-## gitconfig
+### gitconfig
+
+`~/.gitconfig` か `.git/config` に、次のように設定してください
 
 ```
 [filter "s3"]
-    clean = gits3.py store
-    smudge = gits3.py load
+    clean = gits3 store
+    smudge = gits3 load
+    required
 ```
 
-Go 版を使う時は `gits3.py` の代わりに `gits3-linux-amd64` など、用意したバイナリ名を指定してください。
+### gitattribute
 
-gitattributes も `filter=s3` に設定しておいてください.
+git リポジトリの中に `.gitattributes` っていうファイルを作って、次のように設定してください。
+
+```
+*.png  filter=s3
+*.jpeg filter=s3
+*.jpg  filter=s3
+*.gif  filter=s3
+```
+
+これで設定したファイルは largefile フィルターを通るようになります.
