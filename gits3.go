@@ -15,11 +15,20 @@ import (
 	"strings"
 )
 
-var configSection = flag.String("section", "default", "Section name of config file.")
-var assetDirPath = flag.String("assetpath", "~/.gitasset", "Asset directory")
+var (
+	configSection string
+	assetDirPath  string
+	localMode     bool
+)
+
+func init() {
+	flag.StringVar(&configSection, "section", "default", "Section name of config file.")
+	flag.StringVar(&assetDirPath, "assetpath", "~/.gitasset", "Asset directory")
+	flag.BoolVar(&localMode, "local", false, "Local mode (not use S3)")
+}
 
 func assetDir() string {
-	p := *assetDirPath
+	p := assetDirPath
 	if p[0:2] == "~/" {
 		usr, err := user.Current()
 		if err != nil {
@@ -41,11 +50,11 @@ func getConfig() *goconfig.ConfigFile {
 
 func getBucket() *s3.Bucket {
 	conf := getConfig()
-	awskey, err := conf.GetString(*configSection, "awskey")
+	awskey, err := conf.GetString(configSection, "awskey")
 	if err != nil {
 		log.Fatal(err)
 	}
-	bucketName, err := conf.GetString(*configSection, "bucket")
+	bucketName, err := conf.GetString(configSection, "bucket")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +123,11 @@ func store() {
 	}
 	sha1hex := calcSha1String(data)
 	storeToCache(sha1hex, data)
-	storeToS3(sha1hex, data)
+	if !localMode {
+		if err = storeToS3(sha1hex, data); err != nil {
+			log.Fatal(err)
+		}
+	}
 	writeStdout([]byte(sha1hex))
 }
 
